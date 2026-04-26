@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const LLAMA_API_KEY = "LLM|968698072209319|IyU4JbUhVDdiJR9mCqzW6lyxdZE";
+const LLAMA_API_KEY = import.meta.env.VITE_LLAMA_API_KEY;
 const LLAMA_MODEL   = "Llama-4-Maverick-17B-128E-Instruct-FP8";
 
 const FONTS = `
