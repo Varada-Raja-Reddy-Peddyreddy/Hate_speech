@@ -1,7 +1,5 @@
 import { useState } from "react";
 
-const LLAMA_API_KEY = import.meta.env.VITE_LLAMA_API_KEY;
-const LLAMA_MODEL   = "Llama-4-Maverick-17B-128E-Instruct-FP8";
 
 const FONTS = `
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap');
@@ -386,21 +384,14 @@ export default function App() {
   const classify = async (text) => {
     setBusy(true);
     try {
-      const res = await fetch("https://api.llama.com/v1/chat/completions",{
-        method:"POST",
-        headers:{"Content-Type":"application/json","Authorization":`Bearer ${LLAMA_API_KEY}`},
-        body:JSON.stringify({
-          model:LLAMA_MODEL,
-          messages:[
-            {role:"system",content:SYS},
-            {role:"user",content:`Classify this social media post: "${text}"`},
-          ],
-          max_completion_tokens:1000,
-        }),
+      const res = await fetch("/api/classify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, sys: SYS }),
       });
       const data = await res.json();
-      const raw  = data.completion_message.content.text.replace(/```json|```/g,"").trim();
-      return JSON.parse(raw);
+      if (!res.ok) throw new Error(data.error);
+      return data;
     } catch {
       return {class_id:2,class_label:"neither",confidence:.5,reasoning:"Classification unavailable — please try again."};
     } finally {
