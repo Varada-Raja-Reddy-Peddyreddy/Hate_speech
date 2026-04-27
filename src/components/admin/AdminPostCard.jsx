@@ -29,9 +29,8 @@ export default function AdminPostCard({ post, fresh, c, userId }) {
   const [expanded,   setExpanded]   = useState(false);
   const [flagModal,  setFlagModal]  = useState(false);
 
-  const cls          = post.classification;
-  const likesCount   = post.likes_count?.[0]?.count ?? 0;
-  const { liked, count, toggle } = useLikes(post.id, likesCount, userId);
+  const cls = post.classification;
+  const { liked, count, toggle } = useLikes(post.id, 0, userId);
 
   const leftClr = cls
     ? cls.class_id === 0 ? c.h : cls.class_id === 1 ? c.o : c.b

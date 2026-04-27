@@ -13,6 +13,7 @@ export default function UserFlagModal({ targetUser, onClose, c }) {
     if (!reason.trim()) return;
     setBusy(true);
 
+    // Log the flag action
     await supabase.from("user_flags").insert({
       flagged_user_id: targetUser.id,
       admin_id: adminProfile.id,
@@ -20,11 +21,17 @@ export default function UserFlagModal({ targetUser, onClose, c }) {
       action,
     });
 
-    if (action === "ban") {
-      await supabase.from("profiles").update({ is_banned: true }).eq("id", targetUser.id);
-    } else if (action === "unban") {
-      await supabase.from("profiles").update({ is_banned: false }).eq("id", targetUser.id);
-    }
+    // Update the user's profile so they can see the flag reason in their feed
+    const profileUpdate = {
+      flag_reason: action === "unban" ? null : reason.trim(),
+      flag_action: action === "unban" ? null : action,
+      is_banned:   action === "ban"   ? true
+                 : action === "unban" ? false
+                 : undefined,
+    };
+    // Remove undefined keys
+    Object.keys(profileUpdate).forEach(k => profileUpdate[k] === undefined && delete profileUpdate[k]);
+    await supabase.from("profiles").update(profileUpdate).eq("id", targetUser.id);
 
     setBusy(false);
     setDone(true);

@@ -4,8 +4,7 @@ import { useLikes } from "../../hooks/useLikes";
 import { initials } from "../../theme/colors";
 
 export default function PostCard({ post, fresh, c, userId }) {
-  const likesCount = post.likes_count?.[0]?.count ?? post.likes_count ?? 0;
-  const { liked, count, toggle } = useLikes(post.id, likesCount, userId);
+  const { liked, count, toggle } = useLikes(post.id, 0, userId);
 
   const timeAgo = (ts) => {
     const diff = (Date.now() - new Date(ts)) / 1000;

@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
+// Likes count is fetched separately per post via useLikes hook
 const USER_QUERY = `
   id, body, platform, created_at,
-  author:profiles(username, avatar_color),
-  likes_count:likes(count)
+  author:profiles(username, avatar_color)
 `;
 
 const ADMIN_QUERY = `
   id, body, platform, is_flagged, created_at,
-  author:profiles(id, username, avatar_color, is_banned),
-  likes_count:likes(count),
+  author:profiles(id, username, avatar_color, is_banned, flag_reason, flag_action),
   classification:classifications(class_id, class_label, confidence, reasoning)
 `;
 
@@ -25,14 +24,16 @@ export function usePosts(isAdmin = false) {
       .order("created_at", { ascending: false })
       .range(0, 49);
 
-    if (!error && data) setPosts(data);
+    if (error) {
+      console.error("usePosts fetch error:", error.message, error.details);
+    }
+    if (data) setPosts(data);
     setLoading(false);
   }
 
   useEffect(() => {
     fetchPosts();
 
-    // Real-time: new post inserted → prepend to feed
     const channel = supabase
       .channel("posts-feed")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "posts" },

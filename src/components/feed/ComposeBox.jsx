@@ -22,9 +22,7 @@ export default function ComposeBox({ profile, c, onPosted }) {
     const { data: post, error } = await supabase
       .from("posts")
       .insert({ body: text.trim(), platform, author_id: profile.id })
-      .select(`id, body, platform, created_at,
-               author:profiles(username, avatar_color),
-               likes_count:likes(count)`)
+      .select("id, body, platform, created_at, author:profiles(username, avatar_color)")
       .single();
 
     if (error) { console.error(error); setBusy(false); return; }
