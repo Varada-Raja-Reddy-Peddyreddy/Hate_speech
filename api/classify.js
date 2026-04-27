@@ -25,9 +25,10 @@ export default async function handler(req, res) {
     });
 
     const data = await llamaRes.json();
-    const raw  = data.completion_message.content.text.replace(/```json|```/g, "").trim();
+    const raw  = data.choices[0].message.content.replace(/```json|```/g, "").trim();
     return res.status(200).json(JSON.parse(raw));
   } catch (err) {
+    console.error("Llama classify error:", err);
     return res.status(500).json({ error: "Classification failed" });
   }
 }
