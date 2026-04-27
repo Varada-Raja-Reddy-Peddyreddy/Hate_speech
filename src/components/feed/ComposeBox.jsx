@@ -18,17 +18,23 @@ export default function ComposeBox({ profile, c, onPosted }) {
     if (!canGo) return;
     setBusy(true);
 
-    // 1. Insert post into Supabase
+    // 1. Insert post into Supabase (no join — avoids PGRST201 ambiguous FK error)
     const { data: post, error } = await supabase
       .from("posts")
       .insert({ body: text.trim(), platform, author_id: profile.id })
-      .select("id, body, platform, created_at, author:profiles(username, avatar_color)")
+      .select("id, body, platform, created_at")
       .single();
 
     if (error) { console.error(error); setBusy(false); return; }
 
+    // Build full post object optimistically from already-known profile
+    const fullPost = {
+      ...post,
+      author: { username: profile.username, avatar_color: profile.avatar_color },
+    };
+
     setText("");
-    onPosted && onPosted(post);
+    onPosted && onPosted(fullPost);
 
     // 2. Background classification — fire and forget
     fetch("/api/classify", {

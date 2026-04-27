@@ -4,12 +4,12 @@ import { supabase } from "../lib/supabase";
 // Likes count is fetched separately per post via useLikes hook
 const USER_QUERY = `
   id, body, platform, created_at,
-  author:profiles(username, avatar_color)
+  author:profiles!posts_author_id_fkey(username, avatar_color)
 `;
 
 const ADMIN_QUERY = `
   id, body, platform, is_flagged, created_at,
-  author:profiles(id, username, avatar_color, is_banned, flag_reason, flag_action),
+  author:profiles!posts_author_id_fkey(id, username, avatar_color, is_banned, flag_reason, flag_action),
   classification:classifications(class_id, class_label, confidence, reasoning)
 `;
 
