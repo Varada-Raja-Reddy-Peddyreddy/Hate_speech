@@ -7,6 +7,11 @@ export default async function handler(req, res) {
   const LLAMA_API_KEY = process.env.LLAMA_API_KEY;
   const LLAMA_MODEL   = "Llama-4-Maverick-17B-128E-Instruct-FP8";
 
+  if (!LLAMA_API_KEY) {
+    console.error("LLAMA_API_KEY environment variable is not set");
+    return res.status(500).json({ error: "API key not configured" });
+  }
+
   try {
     const llamaRes = await fetch("https://api.llama.com/v1/chat/completions", {
       method: "POST",
@@ -25,10 +30,24 @@ export default async function handler(req, res) {
     });
 
     const data = await llamaRes.json();
-    const raw  = data.choices[0].message.content.replace(/```json|```/g, "").trim();
+    console.log("Llama HTTP status:", llamaRes.status);
+    console.log("Llama raw response:", JSON.stringify(data));
+
+    // Handle both Llama proprietary format and OpenAI-compatible format
+    let rawText;
+    if (data.choices?.[0]?.message?.content) {
+      rawText = data.choices[0].message.content;
+    } else if (data.completion_message?.content?.text) {
+      rawText = data.completion_message.content.text;
+    } else {
+      console.error("Unrecognised response shape:", JSON.stringify(data));
+      return res.status(500).json({ error: "Unexpected API response", raw: data });
+    }
+
+    const raw = rawText.replace(/```json|```/g, "").trim();
     return res.status(200).json(JSON.parse(raw));
   } catch (err) {
-    console.error("Llama classify error:", err);
-    return res.status(500).json({ error: "Classification failed" });
+    console.error("Llama classify error:", err.message);
+    return res.status(500).json({ error: err.message });
   }
 }

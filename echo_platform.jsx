@@ -392,8 +392,8 @@ export default function App() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       return data;
-    } catch {
-      return {class_id:2,class_label:"neither",confidence:.5,reasoning:"Classification unavailable — please try again."};
+    } catch (err) {
+      return {class_id:2,class_label:"neither",confidence:.5,reasoning:`Error: ${err.message}`};
     } finally {
       setBusy(false);
     }
